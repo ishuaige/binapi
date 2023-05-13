@@ -111,33 +111,37 @@ Bin API 平台在开发者注册后，只需要找到需要的接口，获取接
 
 * 主页
 
-![image-20230513163618066](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513163618066.png)
+![image-20230513225733026](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513225733026.png)
 
 * 接口详情以及在线调用
 
-![image-20230513164251038](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513164251038.png)
+![image-20230513225745495](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513225745495.png)
 
-![image-20230513164319179](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513164319179.png)
+
+
+![image-20230513225757002](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513225757002.png)
 
 * 购买接口（创建订单）
 
-![image-20230513164340003](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513164340003.png)
+![image-20230513225812582](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513225812582.png)
 
 * 订单页
 
-![image-20230513204217196](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513204217196.png)
+![image-20230513230326046](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513230326046.png)
 
 * 支付弹窗
 
-![image-20230513204248883](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513204248883.png)
+![image-20230513230345813](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513230345813.png)
 
 * 我已经拥有的接口页
 
-![image-20230513204345179](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513204345179.png)
+![image-20230513230400078](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513230400078.png)
 
 * 用户、接口管理页
 
-![image-20230513204404020](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513204404020.png)
+![image-20230513230411559](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513230411559.png)
+
+![image-20230513230426027](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513230426027.png)
 
 * 分析页
 
@@ -145,7 +149,7 @@ Bin API 平台在开发者注册后，只需要找到需要的接口，获取接
 
 * 个人信息页
 
-![image-20230513204448366](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513204448366.png)
+![image-20230513230441943](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513230441943.png)
 
 ## 欢迎贡献
 
