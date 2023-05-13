@@ -1,0 +1,44 @@
+server:
+  port: 8002
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          gateway: trace
+spring:
+  application:
+    name: binapi-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+    gateway:
+      routes:
+#       这个路由使用配置类配置自定义拦截器，用配置文件不知道怎么回事总是找不到 Bean
+#        - id: binapi-interface
+#          uri: lb://binapi-interface
+#          predicates:
+#            - Path=/api/interface/**
+#          filters:
+#            - interfaceFilter
+        - id: binapi-order
+          uri: lb://binapi-order
+          predicates:
+            - Path=/api/order/**
+        - id: binapi-third
+          uri: lb://binapi-third
+          predicates:
+            - Path=/api/third/**
+        - id: binapi-backend
+          uri: lb://binapi-backend
+          predicates:
+            - Path=/api/**
+dubbo:
+  application:
+    name: customer
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    address: nacos://localhost:8848

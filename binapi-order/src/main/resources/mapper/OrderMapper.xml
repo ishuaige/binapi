@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.niuma.binapiorder.mapper.OrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.niuma.binapicommon.model.entity.Order">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="interfaceId" column="interfaceId" jdbcType="BIGINT"/>
+            <result property="userId" column="userId" jdbcType="BIGINT"/>
+            <result property="orderNumber" column="orderNumber" jdbcType="VARCHAR"/>
+            <result property="total" column="total" jdbcType="BIGINT"/>
+            <result property="charging" column="charging" jdbcType="FLOAT"/>
+            <result property="totalAmount" column="totalAmount" jdbcType="FLOAT"/>
+            <result property="status" column="status" jdbcType="INTEGER"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,interfaceId,userId,
+        orderNumber,total,charging,
+        totalAmount,status,createTime,
+        updateTime,isDelete
+    </sql>
+    <select id="listTopBuyInterfaceInfo" resultType="com.niuma.binapicommon.model.entity.Order">
+        select interfaceId , SUM(total) as total from api_order
+        GROUP BY interfaceId
+        ORDER BY total desc
+        limit #{limit}
+    </select>
+</mapper>
