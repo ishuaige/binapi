@@ -4,7 +4,7 @@
 >
 > Java + React 全栈项目，包括网站前台+管理员后台，感谢[鱼厂创始人](https://github.com/liyupi)提供的项目基础框架，我也是在此基础上作拓展
 >
-> 项目后端开源代码：https://github.com/ishuaige/binapi-backend
+> 项目后端开源代码：https://github.com/ishuaige/binapi
 >
 > 项目前端开源代码：https://github.com/ishuaige/binapi-frontend
 
