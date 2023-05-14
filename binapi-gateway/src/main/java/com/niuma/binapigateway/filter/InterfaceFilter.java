@@ -1,6 +1,8 @@
 package com.niuma.binapigateway.filter;
 
 
+import com.niuma.binapicommon.common.ErrorCode;
+import com.niuma.binapicommon.exception.BusinessException;
 import com.niuma.binapicommon.model.entity.InterfaceInfo;
 import com.niuma.binapicommon.model.entity.User;
 import com.niuma.binapicommon.service.InnerInterfaceInfoService;
@@ -113,11 +115,11 @@ public class InterfaceFilter implements GatewayFilter, Ordered{
         InterfaceInfo interfaceInfo = null;
         try {
             interfaceInfo = innerInterfaceInfoService.getInterfaceInfo(path,method);
-
         } catch (Exception e) {
             log.error("getInterfaceInfo error:{}",e.getMessage());
         }
         if(interfaceInfo == null){
+            log.error("接口不存在 路径，方法:{}，{}",path,method);
             return handleNoAuth(response);
         }
 
@@ -127,6 +129,7 @@ public class InterfaceFilter implements GatewayFilter, Ordered{
         // 7. 判断是否还有调用次数
         boolean hasAuth = innerUserInterfaceInfoService.checkUserInvokeAuth(invokeUser.getId(), interfaceInfo.getId());
         if(!hasAuth){
+            log.error("接口没有调用次数 用户id，接口id:{}，{}",invokeUser.getId(), interfaceInfo.getId());
             return handleNoAuth(response);
         }
 

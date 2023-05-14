@@ -86,52 +86,6 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange);
     }
 
-    public Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain,Long interfaceInfoId,Long userId) {
-        try {
-            ServerHttpResponse originalResponse = exchange.getResponse();
-            DataBufferFactory bufferFactory = originalResponse.bufferFactory();
-
-            HttpStatus statusCode = originalResponse.getStatusCode();
-
-            if(statusCode == HttpStatus.OK){
-                ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
-                    //等调用完接口后才会执行该方法
-                    @Override
-                    public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-                        log.info("body instanceof Flux: {}", (body instanceof Flux));
-                        if (body instanceof Flux) {
-                            Flux<? extends DataBuffer> fluxBody = Flux.from(body);
-                            return super.writeWith(fluxBody.map(dataBuffer -> {
-                                byte[] content = new byte[dataBuffer.readableByteCount()];
-                                dataBuffer.read(content);
-                                DataBufferUtils.release(dataBuffer);//释放掉内存
-                                // 构建日志
-                                StringBuilder sb2 = new StringBuilder(200);
-                                List<Object> rspArgs = new ArrayList<>();
-                                rspArgs.add(originalResponse.getStatusCode());
-                                String data = new String(content, StandardCharsets.UTF_8);//data 响应结果数据
-                                sb2.append(data);
-                                log.info("响应结果：{}",data);
-                                return bufferFactory.wrap(content);
-                            }));
-                        } else {
-                            log.error("<--- {} 响应code异常", getStatusCode());
-                        }
-                        return super.writeWith(body);
-                    }
-                };
-                // 调用模拟接口
-                return chain.filter(exchange.mutate().response(decoratedResponse).build());
-            }
-            //降级处理返回数据
-            return chain.filter(exchange);
-        }catch (Exception e){
-            log.error("网关响应异常：" + e);
-            return chain.filter(exchange);
-        }
-    }
-
-
     public Mono<Void> handleNoAuth(ServerHttpResponse response) {
         response.setStatusCode(HttpStatus.FORBIDDEN);
         return response.setComplete();

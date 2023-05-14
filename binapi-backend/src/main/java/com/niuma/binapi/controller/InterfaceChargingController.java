@@ -42,8 +42,6 @@ public class InterfaceChargingController {
     @Resource
     private UserService userService;
 
-    @Resource
-    private BinApiClient binApiClient;
 
     // region 增删改查
 

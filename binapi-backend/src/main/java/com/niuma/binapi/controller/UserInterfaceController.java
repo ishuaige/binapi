@@ -3,19 +3,22 @@ package com.niuma.binapi.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.niuma.binapi.annotation.AuthCheck;
+import com.niuma.binapi.model.dto.userInterfaceinfo.UserInterfaceInfoAddRequest;
+import com.niuma.binapi.model.dto.userInterfaceinfo.UserInterfaceInfoQueryRequest;
+import com.niuma.binapi.model.dto.userInterfaceinfo.UserInterfaceInfoUpdateRequest;
+import com.niuma.binapi.model.entity.InterfaceCharging;
 import com.niuma.binapi.model.vo.UserInterfaceInfoVO;
+import com.niuma.binapi.service.InterfaceChargingService;
+import com.niuma.binapi.service.UserInterfaceInfoService;
+import com.niuma.binapi.service.UserService;
+import com.niuma.binapiclientsdk.client.BinApiClient;
 import com.niuma.binapicommon.common.BaseResponse;
 import com.niuma.binapicommon.common.DeleteRequest;
 import com.niuma.binapicommon.common.ErrorCode;
 import com.niuma.binapicommon.common.ResultUtils;
 import com.niuma.binapicommon.constant.CommonConstant;
-import com.niuma.binapi.model.dto.userInterfaceinfo.UserInterfaceInfoAddRequest;
-import com.niuma.binapi.model.dto.userInterfaceinfo.UserInterfaceInfoQueryRequest;
-import com.niuma.binapi.model.dto.userInterfaceinfo.UserInterfaceInfoUpdateRequest;
-import com.niuma.binapi.service.UserInterfaceInfoService;
-import com.niuma.binapi.service.UserService;
-import com.niuma.binapiclientsdk.client.BinApiClient;
 import com.niuma.binapicommon.exception.BusinessException;
+import com.niuma.binapicommon.model.dto.UpdateUserInterfaceInfoDTO;
 import com.niuma.binapicommon.model.entity.User;
 import com.niuma.binapicommon.model.entity.UserInterfaceInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +45,9 @@ public class UserInterfaceController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private InterfaceChargingService interfaceChargingService;
 
     @Resource
     private BinApiClient binApiClient;
@@ -203,11 +209,40 @@ public class UserInterfaceController {
     }
 
     @GetMapping("/list/userId")
-    public BaseResponse<List<UserInterfaceInfoVO>> getInterfaceInfoByUserId(@RequestParam Long userId,HttpServletRequest request){
-        List<UserInterfaceInfoVO> userInterfaceInfoVOList = userInterfaceInfoService.getInterfaceInfoByUserId(userId,request);
+    public BaseResponse<List<UserInterfaceInfoVO>> getInterfaceInfoByUserId(@RequestParam Long userId, HttpServletRequest request) {
+        List<UserInterfaceInfoVO> userInterfaceInfoVOList = userInterfaceInfoService.getInterfaceInfoByUserId(userId, request);
         return ResultUtils.success(userInterfaceInfoVOList);
     }
 
+    @PostMapping("/get/free")
+    public BaseResponse<Boolean> getFreeInterfaceCount(@RequestBody UpdateUserInterfaceInfoDTO updateUserInterfaceInfoDTO, HttpServletRequest request) {
+        Long interfaceId = updateUserInterfaceInfoDTO.getInterfaceId();
+        Long userId = updateUserInterfaceInfoDTO.getUserId();
+        Long lockNum = updateUserInterfaceInfoDTO.getLockNum();
+        if (interfaceId == null || userId == null || lockNum == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        if (lockNum > 100) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "您一次性获取的次数太多了");
+        }
+        synchronized (userId) {
+            User loginUser = userService.getLoginUser(request);
+            if (!userId.equals(loginUser.getId())) {
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+            }
+            long interfaceCharging = interfaceChargingService.count(new QueryWrapper<InterfaceCharging>().eq("interfaceId", interfaceId));
+            if (interfaceCharging > 0) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "这个是付费接口噢!");
+            }
+            UserInterfaceInfo one = userInterfaceInfoService.getOne(new QueryWrapper<UserInterfaceInfo>().eq("userId", userId).eq("interfaceInfoId", interfaceId));
+            if (one != null && one.getLeftNum() >= 1000) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "您获取的次数太多了");
+            }
+
+            boolean b = userInterfaceInfoService.updateUserInterfaceInfo(updateUserInterfaceInfoDTO);
+            return ResultUtils.success(b);
+        }
+    }
     // endregion
 
 }

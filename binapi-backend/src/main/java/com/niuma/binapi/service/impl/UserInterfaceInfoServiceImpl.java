@@ -93,6 +93,10 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         Long interfaceId = updateUserInterfaceInfoDTO.getInterfaceId();
         Long lockNum = updateUserInterfaceInfoDTO.getLockNum();
 
+        if(interfaceId == null || userId == null || lockNum == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
         UserInterfaceInfo one = this.getOne(
                 new QueryWrapper<UserInterfaceInfo>()
                         .eq("userId", userId)
@@ -120,13 +124,13 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
 
     @Override
     public boolean checkUserInvokeAuth(Long userId, Long interfaceInfoId) {
-        QueryWrapper<InterfaceCharging> chargingQueryWrapper = new QueryWrapper<>();
-        chargingQueryWrapper.eq("interfaceId", interfaceInfoId);
-        long count = interfaceChargingService.count(chargingQueryWrapper);
-        if (count <= 0) {
-            // 不需要计费
-            return true;
-        }
+//        QueryWrapper<InterfaceCharging> chargingQueryWrapper = new QueryWrapper<>();
+//        chargingQueryWrapper.eq("interfaceId", interfaceInfoId);
+//        long count = interfaceChargingService.count(chargingQueryWrapper);
+//        if (count <= 0) {
+//            // 不需要计费
+//            return true;
+//        }
 
         QueryWrapper<UserInterfaceInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userId", userId);

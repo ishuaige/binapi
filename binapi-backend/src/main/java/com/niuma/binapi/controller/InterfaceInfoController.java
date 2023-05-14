@@ -292,6 +292,9 @@ public class InterfaceInfoController {
         if (res == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
+        if(res.toString().contains("Error request")){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,"调用错误，请检查调用次数！");
+        }
         return ResultUtils.success(res);
     }
 
