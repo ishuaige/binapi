@@ -1,0 +1,15 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+      config:
+        file-extension: yaml
+        namespace: f006143a-8fa2-4fe0-8eac-9459a6dcbd5e
+        shared-configs[0]:
+          dataId: db.yaml
+          refresh: true
+  profiles:
+    active: dev
+  application:
+    name: binapi-interface

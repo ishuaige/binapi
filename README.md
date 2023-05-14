@@ -48,9 +48,11 @@ Bin API 平台在开发者注册后，只需要找到需要的接口，获取接
 
 ### 后端
 
-将各模块配置修改成你自己本地的端口、账号、密码
+0. **如果你在最开始不使用Nacos配置中心，那么可以将binapi-config中的配置复制到对应模块使用**
 
-启动Nacos、Mysql、Redis、RabbitMq、（**支付宝沙箱服务需要配置内网穿透，非必要**）
+1. 将各模块配置修改成你自己本地的端口、账号、密码
+
+2. 启动Nacos、Mysql、Redis、RabbitMq、（**支付宝沙箱服务需要配置内网穿透，非必要**）
 
 服务启动顺序参考：
 
@@ -92,6 +94,7 @@ Bin API 平台在开发者注册后，只需要找到需要的接口，获取接
 * binapi-order：订单服务，提供对订单的操作
 * binapi-third-party：第三方服务，包含阿里云oss、支付宝沙箱支付、腾讯短信服务
 * binapi-client-sdk：提供给开发者的SDK
+* binapi-config：配置文件
 
 ![image-20230513211723627](https://niumapicgo.oss-cn-beijing.aliyuncs.com/images/image-20230513211723627.png)
 

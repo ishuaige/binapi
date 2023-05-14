@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: binapi-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+      config:
+        file-extension: yaml
+        namespace: f006143a-8fa2-4fe0-8eac-9459a6dcbd5e
+  profiles:
+    active: dev

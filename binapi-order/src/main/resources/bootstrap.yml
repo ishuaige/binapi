@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: binapi-order
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+      config:
+        file-extension: yaml
+        namespace: f006143a-8fa2-4fe0-8eac-9459a6dcbd5e
+        shared-configs[0]:
+          dataId: db.yaml
+          refresh: true
+        shared-configs[1]:
+          dataId: rabbitmq.yaml
+          refresh: true
+  profiles:
+    active: dev
