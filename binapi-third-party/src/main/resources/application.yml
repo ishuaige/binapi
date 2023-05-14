@@ -48,6 +48,9 @@ dubbo:
     port: -1
   registry:
     address: nacos://localhost:8848
+    # 配置namespace
+    parameters:
+      namespace: 16239c21-ac42-46bc-a4e7-690e64272f5a
 #腾讯短信服务
 tencent:
   secretId: xxx
