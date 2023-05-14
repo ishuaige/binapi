@@ -42,7 +42,7 @@ mybatis-plus:
 
 dubbo:
   application:
-    name: binapi-third-party
+    name: binapi-third-party-dubbo
   protocol:
     name: dubbo
     port: -1

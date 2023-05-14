@@ -51,7 +51,7 @@ binapi-client:
 
 dubbo:
   application:
-    name: provider
+    name: binapi-backend-dubbo
   protocol:
     name: dubbo
     port: -1

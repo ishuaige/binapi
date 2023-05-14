@@ -46,7 +46,7 @@ mybatis-plus:
 
 dubbo:
   application:
-    name: binapi-order
+    name: binapi-order-dubbo
   protocol:
     name: dubbo
     port: -1
