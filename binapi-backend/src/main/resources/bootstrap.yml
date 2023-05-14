@@ -9,10 +9,13 @@ spring:
         server-addr: localhost:8848
       config:
         file-extension: yaml
-        namespace: f006143a-8fa2-4fe0-8eac-9459a6dcbd5e
+        namespace: 1ce6c2fb-611e-4d1e-834d-567340760462
         shared-configs[0]:
           dataId: db.yaml
           refresh: true
         shared-configs[1]:
           dataId: rabbitmq.yaml
+          refresh: true
+        shared-configs[2]:
+          dataId: dubbo.yaml
           refresh: true
