@@ -45,6 +45,7 @@ public class BinApiClient {
                 .execute().body();
         return result2;
     }
+
     public String renjian() {
         String result2 = HttpRequest.get(GATEWAY_HOST +"/api/interface/renjian")
                 .addHeaders(getHeaderMap(""))
