@@ -1,6 +1,8 @@
 package com.niuma.binapi.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.niuma.binapi.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import com.niuma.binapicommon.model.entity.InterfaceInfo;
 
 /**
@@ -32,5 +34,10 @@ public interface InterfaceInfoService extends IService<InterfaceInfo> {
      */
     Boolean offlineInterfaceInfo(long id);
 
-
+    /**
+     * 搜索分页接口信息
+     * @param interfaceInfoQueryRequest
+     * @return
+     */
+    Page<InterfaceInfo> getInterfaceInfoPage(InterfaceInfoQueryRequest interfaceInfoQueryRequest);
 }

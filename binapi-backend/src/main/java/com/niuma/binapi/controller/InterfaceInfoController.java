@@ -3,11 +3,9 @@ package com.niuma.binapi.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
+import com.niuma.binapi.Facade.InterfaceInfoSearchFacade;
 import com.niuma.binapi.annotation.AuthCheck;
-import com.niuma.binapi.model.dto.interfaceinfo.InterfaceInfoAddRequest;
-import com.niuma.binapi.model.dto.interfaceinfo.InterfaceInfoInvokeRequest;
-import com.niuma.binapi.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
-import com.niuma.binapi.model.dto.interfaceinfo.InterfaceInfoUpdateRequest;
+import com.niuma.binapi.model.dto.interfaceinfo.*;
 import com.niuma.binapi.model.entity.InterfaceCharging;
 import com.niuma.binapi.model.enums.InterfaceInfoStatusEnum;
 import com.niuma.binapi.model.vo.InterfaceInfoVO;
@@ -16,20 +14,13 @@ import com.niuma.binapi.service.InterfaceInfoService;
 import com.niuma.binapi.service.UserService;
 import com.niuma.binapiclientsdk.client.BinApiClient;
 import com.niuma.binapicommon.common.*;
-import com.niuma.binapicommon.constant.CommonConstant;
 import com.niuma.binapicommon.exception.BusinessException;
 import com.niuma.binapicommon.model.entity.InterfaceInfo;
 import com.niuma.binapicommon.model.entity.User;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -37,9 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -62,7 +50,7 @@ public class InterfaceInfoController {
     private UserService userService;
 
     @Resource
-    private BinApiClient binApiClient;
+    private InterfaceInfoSearchFacade interfaceInfoSearchFacade;
 
     // region 增删改查
 
@@ -233,31 +221,10 @@ public class InterfaceInfoController {
      */
     @GetMapping("/list/page")
     public BaseResponse<Page<InterfaceInfo>> listInterfaceInfoByPage(InterfaceInfoQueryRequest interfaceInfoQueryRequest, HttpServletRequest request) {
-        if (interfaceInfoQueryRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        InterfaceInfo interfaceInfoQuery = new InterfaceInfo();
-        BeanUtils.copyProperties(interfaceInfoQueryRequest, interfaceInfoQuery);
-        long current = interfaceInfoQueryRequest.getCurrent();
-        long size = interfaceInfoQueryRequest.getPageSize();
-        String sortField = interfaceInfoQueryRequest.getSortField();
-        String sortOrder = interfaceInfoQueryRequest.getSortOrder();
-        String description = interfaceInfoQuery.getDescription();
-        // description 需支持模糊搜索
-        interfaceInfoQuery.setDescription(null);
-        interfaceInfoQuery.setName(null);
-        // 限制爬虫
-        if (size > 50) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>(interfaceInfoQuery);
-        queryWrapper.like(StringUtils.isNotBlank(description), "description", description);
-        queryWrapper.like(StringUtils.isNotBlank(interfaceInfoQueryRequest.getName()), "name", interfaceInfoQueryRequest.getName());
-        queryWrapper.orderBy(StringUtils.isNotBlank(sortField),
-                sortOrder.equals(CommonConstant.SORT_ORDER_ASC), sortField);
-        Page<InterfaceInfo> interfaceInfoPage = interfaceInfoService.page(new Page<>(current, size), queryWrapper);
+        Page<InterfaceInfo> interfaceInfoPage = interfaceInfoService.getInterfaceInfoPage(interfaceInfoQueryRequest);
         return ResultUtils.success(interfaceInfoPage);
     }
+
 
     /**
      * 测试接口
@@ -292,8 +259,8 @@ public class InterfaceInfoController {
         if (res == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        if(res.toString().contains("Error request")){
-            throw new BusinessException(ErrorCode.OPERATION_ERROR,"调用错误，请检查调用次数！");
+        if (res.toString().contains("Error request")) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用错误，请检查调用次数！");
         }
         return ResultUtils.success(res);
     }
@@ -355,4 +322,8 @@ public class InterfaceInfoController {
         }
     }
 
+    @PostMapping("/search")
+    public BaseResponse<Page<InterfaceInfo>> search(@RequestBody InterfaceInfoSearchRequest interfaceInfoSearchRequest) {
+        return ResultUtils.success(interfaceInfoSearchFacade.searchAll(interfaceInfoSearchRequest));
+    }
 }
