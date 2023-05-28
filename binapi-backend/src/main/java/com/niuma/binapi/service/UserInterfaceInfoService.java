@@ -2,6 +2,7 @@ package com.niuma.binapi.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.niuma.binapi.model.vo.InterfaceInfoVO;
 import com.niuma.binapi.model.vo.UserInterfaceInfoVO;
 import com.niuma.binapicommon.model.dto.UpdateUserInterfaceInfoDTO;
 import com.niuma.binapicommon.model.entity.UserInterfaceInfo;
@@ -31,6 +32,13 @@ public interface UserInterfaceInfoService extends IService<UserInterfaceInfo> {
      * @return
      */
     boolean invokeCount(long interfaceInfoId, long userId) ;
+
+    /**
+     * 获取调用次数前limit的接口信息
+     * @param limit
+     * @return
+     */
+    List<InterfaceInfoVO> interfaceInvokeTopAnalysis(int limit);
 
     /**
      * 更新用户接口信息

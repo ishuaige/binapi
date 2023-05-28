@@ -3,7 +3,7 @@ package com.niuma.binapi.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
-import com.niuma.binapi.Facade.InterfaceInfoSearchFacade;
+import com.niuma.binapi.facade.InterfaceInfoSearchFacade;
 import com.niuma.binapi.annotation.AuthCheck;
 import com.niuma.binapi.model.dto.interfaceinfo.*;
 import com.niuma.binapi.model.entity.InterfaceCharging;

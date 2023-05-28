@@ -1,4 +1,4 @@
-package com.niuma.binapi.Facade;
+package com.niuma.binapi.facade;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.niuma.binapi.datasource.DataSourceRegistry;

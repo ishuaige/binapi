@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.niuma.binapi.mapper.UserInterfaceInfoMapper;
 import com.niuma.binapi.model.entity.InterfaceCharging;
+import com.niuma.binapi.model.vo.InterfaceInfoVO;
 import com.niuma.binapi.model.vo.UserInterfaceInfoVO;
 import com.niuma.binapi.service.InterfaceChargingService;
 import com.niuma.binapi.service.UserInterfaceInfoService;
@@ -20,6 +21,7 @@ import com.niuma.binapicommon.model.entity.UserInterfaceInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +43,8 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
     @Resource
     InterfaceInfoServiceImpl interfaceInfoService;
 
+    @Resource
+    UserInterfaceInfoMapper userInterfaceInfoMapper;
     @Resource
     UserService userService;
 
@@ -85,6 +89,27 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         queryWrapper.setSql("leftNum = leftNum-1,totalNum = totalNum+1");
         return this.update(queryWrapper);
 
+    }
+
+    @Override
+    public List<InterfaceInfoVO> interfaceInvokeTopAnalysis(int limit) {
+        List<UserInterfaceInfo> userInterfaceInfoList = userInterfaceInfoMapper.listTopInvokeInterfaceInfo(limit);
+        Map<Long, List<UserInterfaceInfo>> interfaceInfoIdObjMap = userInterfaceInfoList.stream()
+                .collect(Collectors.groupingBy(UserInterfaceInfo::getInterfaceInfoId));
+        QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", interfaceInfoIdObjMap.keySet());
+        List<InterfaceInfo> list = interfaceInfoService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(list)) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+        List<InterfaceInfoVO> interfaceInfoVOList = list.stream().map(interfaceInfo -> {
+            InterfaceInfoVO interfaceInfoVO = new InterfaceInfoVO();
+            BeanUtils.copyProperties(interfaceInfo, interfaceInfoVO);
+            int totalNum = interfaceInfoIdObjMap.get(interfaceInfo.getId()).get(0).getTotalNum();
+            interfaceInfoVO.setTotalNum(totalNum);
+            return interfaceInfoVO;
+        }).collect(Collectors.toList());
+        return interfaceInfoVOList;
     }
 
     @Override
