@@ -52,7 +52,7 @@ public class InterfaceFilter implements GatewayFilter, Ordered{
     @DubboReference
     InnerInterfaceInfoService innerInterfaceInfoService;
 
-    private static final String HOST = "http://localhost:8001";
+    private static final String HOST = "http://localhost:8002";
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {

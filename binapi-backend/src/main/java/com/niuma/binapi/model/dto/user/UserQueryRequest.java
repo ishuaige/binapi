@@ -1,5 +1,6 @@
 package com.niuma.binapi.model.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.niuma.binapicommon.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -29,6 +30,10 @@ public class UserQueryRequest extends PageRequest implements Serializable {
      * 账号
      */
     private String userAccount;
+    /**
+     * 手机号
+     */
+    private String phoneNum;
 
     /**
      * 用户头像
@@ -48,12 +53,14 @@ public class UserQueryRequest extends PageRequest implements Serializable {
     /**
      * 创建时间
      */
-    private Date createTime;
+    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
+    private String createTime;
 
     /**
      * 更新时间
      */
-    private Date updateTime;
+    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
+    private String updateTime;
 
     private static final long serialVersionUID = 1L;
 }

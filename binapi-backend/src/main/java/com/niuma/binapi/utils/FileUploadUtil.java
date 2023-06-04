@@ -1,26 +1,29 @@
-package com.niuma.binapithirdparty.service.impl;
+package com.niuma.binapi.utils;
 
+import cn.hutool.core.date.DateTime;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
-import com.niuma.binapithirdparty.service.OssService;
-import com.niuma.binapithirdparty.utils.OssConstantPropertiesUtil;
-import org.joda.time.DateTime;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 /**
- * @author niumazlb
+ * @author niuma
+ * @create 2023-06-04 15:39
  */
-@Service
-public class OssServiceImpl implements OssService {
+public class FileUploadUtil {
+    private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList("image/jpeg", "image/png", "image/gif");
+    private static final int THREE_M = 3 * 1024 * 1024;
 
-    //上传头像到OSS
-    @Override
-    public String uploadFileAvatar(MultipartFile file) {
+    public static String uploadFileAvatar(MultipartFile file) {
+
+        if(!validate(file)){
+            return null;
+        }
 
         //工具类获取值
         String endpoint = OssConstantPropertiesUtil.END_POINT;
@@ -74,4 +77,19 @@ public class OssServiceImpl implements OssService {
         }
     }
 
+    public static boolean validate(MultipartFile file) {
+        if (file.isEmpty()) {
+            return false;
+        }
+        // 文件大小小于3m
+        if (file.getSize() > THREE_M) {
+            return false;
+        }
+        // 文件必须是图片
+        if (!ALLOWED_IMAGE_TYPES.contains(file.getContentType())) {
+            return false;
+        }
+
+        return true;
+    }
 }

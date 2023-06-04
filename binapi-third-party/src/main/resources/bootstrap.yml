@@ -19,3 +19,8 @@ spring:
           refresh: true
   profiles:
     active: dev
+
+yuapi:
+  client:
+    access-key: xxx
+    secret-key: xxx

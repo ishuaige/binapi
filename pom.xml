@@ -131,6 +131,12 @@
             <artifactId>binapi-client-sdk</artifactId>
             <version>0.0.1</version>
         </dependency>
+        <!--        https://github.com/alibaba/easyexcel-->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+            <version>3.3.1</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

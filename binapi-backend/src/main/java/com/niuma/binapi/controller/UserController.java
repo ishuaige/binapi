@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.niuma.binapi.model.dto.user.*;
 import com.niuma.binapi.model.vo.UserDevKeyVO;
 import com.niuma.binapi.service.UserService;
+import com.niuma.binapi.utils.FileUploadUtil;
 import com.niuma.binapicommon.common.BaseResponse;
 import com.niuma.binapicommon.common.DeleteRequest;
 import com.niuma.binapicommon.common.ErrorCode;
@@ -15,8 +16,8 @@ import com.niuma.binapicommon.model.entity.User;
 import com.niuma.binapicommon.model.vo.UserVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +38,7 @@ public class UserController {
     @Resource
     private UserService userService;
 
+
     // region 登录相关
 
     /**
@@ -50,27 +52,29 @@ public class UserController {
         if (userRegisterRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        long result = userService.userRegister(userRegisterRequest,request);
+        long result = userService.userRegister(userRegisterRequest, request);
         return ResultUtils.success(result);
     }
 
     /**
      * 获取图形验证码
+     *
      * @param request
      * @param response
      */
     @GetMapping("/getCaptcha")
-    public void getCaptcha(HttpServletRequest request, HttpServletResponse response){
-        userService.getCaptcha(request,response);
+    public void getCaptcha(HttpServletRequest request, HttpServletResponse response) {
+        userService.getCaptcha(request, response);
     }
 
     /**
      * 发送短信验证码
+     *
      * @param phoneNum
      * @return
      */
     @GetMapping("/smsCaptcha")
-    public BaseResponse<String> smsCaptcha(@RequestParam String phoneNum){
+    public BaseResponse<String> smsCaptcha(@RequestParam String phoneNum) {
         userService.sendSmsCaptcha(phoneNum);
         return ResultUtils.success("获取短信验证码成功！");
     }
@@ -83,7 +87,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/login")
-    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request,HttpServletResponse response) {
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request, HttpServletResponse response) {
         if (userLoginRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -92,7 +96,7 @@ public class UserController {
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User user = userService.userLogin(userAccount, userPassword, request,response);
+        User user = userService.userLogin(userAccount, userPassword, request, response);
         return ResultUtils.success(user);
     }
 
@@ -104,7 +108,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/loginBySms")
-    public BaseResponse<User> userLoginBySms(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request,HttpServletResponse response) {
+    public BaseResponse<User> userLoginBySms(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request, HttpServletResponse response) {
         if (userLoginRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -153,14 +157,12 @@ public class UserController {
     /**
      * 创建用户
      *
-     * @param userAddRequest
-     * @param request
      * @return
      */
     @PostMapping("/add")
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
         // todo 单独写一个添加用户的逻辑
-        throw new BusinessException(ErrorCode.OPERATION_ERROR,"暂未开放，新建用户请到注册页");
+        throw new BusinessException(ErrorCode.OPERATION_ERROR, "暂未开放，新建用户请到注册页");
 //        if (userAddRequest == null) {
 //            throw new BusinessException(ErrorCode.PARAMS_ERROR);
 //        }
@@ -203,6 +205,27 @@ public class UserController {
         }
         User user = new User();
         BeanUtils.copyProperties(userUpdateRequest, user);
+        boolean result = userService.updateById(user);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 更新头像
+     *
+     * @param file
+     * @param request
+     * @return
+     */
+    @PostMapping("/update/avatar")
+    public BaseResponse<Boolean> updateUserAvatar(@RequestParam(required = false) MultipartFile file, HttpServletRequest request) {
+        if (!FileUploadUtil.validate(file)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        User user = new User();
+        user.setId(loginUser.getId());
+        String url = FileUploadUtil.uploadFileAvatar(file);
+        user.setUserAvatar(url);
         boolean result = userService.updateById(user);
         return ResultUtils.success(result);
     }
@@ -262,10 +285,16 @@ public class UserController {
         User userQuery = new User();
         if (userQueryRequest != null) {
             BeanUtils.copyProperties(userQueryRequest, userQuery);
+            userQuery.setPhoneNum(null);
             current = userQueryRequest.getCurrent();
             size = userQueryRequest.getPageSize();
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>(userQuery);
+
+        queryWrapper.like(userQueryRequest != null && StringUtils.isNotBlank(userQueryRequest.getPhoneNum()), "phoneNum", userQueryRequest.getPhoneNum());
+        queryWrapper.ge(userQueryRequest != null && StringUtils.isNotBlank(userQueryRequest.getCreateTime()), "createTime", userQueryRequest.getCreateTime());
+        queryWrapper.ge(userQueryRequest != null && StringUtils.isNotBlank(userQueryRequest.getUpdateTime()), "phoneNum", userQueryRequest.getUpdateTime());
+
         Page<User> userPage = userService.page(new Page<>(current, size), queryWrapper);
         Page<UserVO> userVOPage = new PageDTO<>(userPage.getCurrent(), userPage.getSize(), userPage.getTotal());
         List<UserVO> userVOList = userPage.getRecords().stream().map(user -> {
@@ -280,17 +309,17 @@ public class UserController {
     // endregion
 
     @GetMapping("/key")
-    public BaseResponse<UserDevKeyVO> getKey(HttpServletRequest request){
+    public BaseResponse<UserDevKeyVO> getKey(HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
-        if(loginUser == null){
+        if (loginUser == null) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id",loginUser.getId());
-        queryWrapper.eq("userAccount",loginUser.getUserAccount());
-        queryWrapper.select("accessKey","secretKey");
+        queryWrapper.eq("id", loginUser.getId());
+        queryWrapper.eq("userAccount", loginUser.getUserAccount());
+        queryWrapper.select("accessKey", "secretKey");
         User user = userService.getOne(queryWrapper);
-        if(user == null){
+        if (user == null) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         UserDevKeyVO userDevKeyVO = new UserDevKeyVO();
@@ -300,7 +329,7 @@ public class UserController {
     }
 
     @PostMapping("/gen/key")
-    public BaseResponse<UserDevKeyVO> genKey(HttpServletRequest request){
+    public BaseResponse<UserDevKeyVO> genKey(HttpServletRequest request) {
         UserDevKeyVO userDevKeyVO = userService.genkey(request);
         return ResultUtils.success(userDevKeyVO);
     }

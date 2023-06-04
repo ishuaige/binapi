@@ -1,4 +1,4 @@
-package com.niuma.binapithirdparty.utils;
+package com.niuma.binapi.utils;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;

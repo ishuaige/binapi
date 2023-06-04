@@ -108,8 +108,8 @@ public class AnalysisController {
     private void genExcel(HttpServletResponse response,String fileName,Class entity, List collect) throws IOException {
 
         String sheetName = "analysis";
-        response.setContentType("application/vnd.ms-excel");
-        response.setCharacterEncoding("utf-8");
+        response.setContentType("application/octet-stream");
+//        response.setCharacterEncoding("utf-8");
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
         // 创建ExcelWriter对象
         ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream(), entity).build();

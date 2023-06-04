@@ -60,6 +60,12 @@
             <artifactId>joda-time</artifactId>
             <version>2.10.1</version>
         </dependency>
+<!--        https://github.com/liyupi/yucongming-java-sdk-->
+        <dependency>
+            <groupId>com.yucongming</groupId>
+            <artifactId>yucongming-java-sdk</artifactId>
+            <version>0.0.2</version>
+        </dependency>
         <dependency>
             <groupId>com.tencentcloudapi</groupId>
             <artifactId>tencentcloud-sdk-java</artifactId>
