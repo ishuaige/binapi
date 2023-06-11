@@ -9,6 +9,9 @@ spring:
         shared-configs[0]:
           dataId: db.yaml
           refresh: true
+        shared-configs[1]:
+          dataId: sentinel-dev.yaml
+          refresh: true
   profiles:
     active: dev
   application:

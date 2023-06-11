@@ -19,3 +19,6 @@ spring:
         shared-configs[2]:
           dataId: dubbo.yaml
           refresh: true
+        shared-configs[3]:
+          dataId: sentinel-dev.yaml
+          refresh: true
