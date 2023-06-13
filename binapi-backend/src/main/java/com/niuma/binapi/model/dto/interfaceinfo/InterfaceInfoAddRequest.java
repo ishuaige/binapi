@@ -46,5 +46,21 @@ public class InterfaceInfoAddRequest implements Serializable {
      */
     private String method;
 
+    /**
+     * 是否收费
+     */
+    private boolean needCharge;
+
+    /**
+     * 计费规则（元/条）
+     */
+    private Double charging;
+
+    /**
+     * 接口剩余可调用次数
+     */
+    private String availablePieces;
+
+
     private static final long serialVersionUID = 1L;
 }

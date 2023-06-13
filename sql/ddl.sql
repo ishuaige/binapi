@@ -146,3 +146,21 @@ CREATE TABLE `user_interface_info`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户调用接口关系' ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ----------------------------
+-- Table structure for interface_audit
+-- ----------------------------
+-- auto-generated definition
+create table interface_audit
+(
+    id          bigint auto_increment comment '主键'
+        primary key,
+    interfaceId bigint                             not null comment '接口ID',
+    userId      bigint                             not null comment '申请人id',
+    approverId  bigint                             null comment '审批人ID',
+    createTime  datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    updateTime  datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    isDeleted   tinyint  default 0                 not null comment '逻辑删除标志',
+    remark      varchar(225)                       null comment '备注',
+    auditStatus int      default 0                 not null comment '0--待审核 1--审核结束'
+);

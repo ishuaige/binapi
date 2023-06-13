@@ -2,8 +2,12 @@ package com.niuma.binapi.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.niuma.binapi.model.dto.interfaceinfo.InterfaceInfoAddRequest;
 import com.niuma.binapi.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import com.niuma.binapicommon.model.entity.InterfaceInfo;
+import com.niuma.binapicommon.model.entity.User;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
 * @author niumazlb
@@ -40,4 +44,6 @@ public interface InterfaceInfoService extends IService<InterfaceInfo> {
      * @return
      */
     Page<InterfaceInfo> getInterfaceInfoPage(InterfaceInfoQueryRequest interfaceInfoQueryRequest);
+
+
 }

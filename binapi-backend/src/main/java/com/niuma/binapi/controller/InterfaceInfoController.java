@@ -6,20 +6,21 @@ import com.google.gson.Gson;
 import com.niuma.binapi.facade.InterfaceInfoSearchFacade;
 import com.niuma.binapi.annotation.AuthCheck;
 import com.niuma.binapi.model.dto.interfaceinfo.*;
+import com.niuma.binapi.model.entity.InterfaceAudit;
 import com.niuma.binapi.model.entity.InterfaceCharging;
 import com.niuma.binapi.model.enums.InterfaceInfoStatusEnum;
 import com.niuma.binapi.model.vo.InterfaceInfoVO;
-import com.niuma.binapi.service.InterfaceChargingService;
-import com.niuma.binapi.service.InterfaceInfoService;
-import com.niuma.binapi.service.UserService;
+import com.niuma.binapi.service.*;
 import com.niuma.binapiclientsdk.client.BinApiClient;
 import com.niuma.binapicommon.common.*;
 import com.niuma.binapicommon.exception.BusinessException;
 import com.niuma.binapicommon.model.entity.InterfaceInfo;
 import com.niuma.binapicommon.model.entity.User;
+import com.niuma.binapicommon.model.entity.UserInterfaceInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -45,6 +46,8 @@ public class InterfaceInfoController {
 
     @Resource
     private InterfaceChargingService interfaceChargingService;
+    @Resource
+    private InterfaceAuditService interfaceAuditService;
 
     @Resource
     private UserService userService;
@@ -52,16 +55,21 @@ public class InterfaceInfoController {
     @Resource
     private InterfaceInfoSearchFacade interfaceInfoSearchFacade;
 
+    @Resource
+    private UserInterfaceInfoService userInterfaceInfoService;
+
     // region 增删改查
 
     /**
-     * 创建
+     * 创建(管理员使用，无需审核)
      *
      * @param interfaceInfoAddRequest
      * @param request
      * @return
      */
     @PostMapping("/add")
+    @AuthCheck(mustRole = "admin")
+    @Transactional(rollbackFor = Exception.class)
     public BaseResponse<Long> addInterfaceInfo(@RequestBody InterfaceInfoAddRequest interfaceInfoAddRequest, HttpServletRequest request) {
         if (interfaceInfoAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -73,6 +81,17 @@ public class InterfaceInfoController {
         User loginUser = userService.getLoginUser(request);
         interfaceInfo.setUserId(loginUser.getId());
         boolean result = interfaceInfoService.save(interfaceInfo);
+        // 判断接口是否收费，插入收费信息
+        if (interfaceInfoAddRequest.isNeedCharge()) {
+            InterfaceCharging interfaceCharging = new InterfaceCharging();
+            interfaceCharging.setInterfaceId(interfaceInfo.getId());
+            interfaceCharging.setCharging(interfaceInfoAddRequest.getCharging());
+            interfaceCharging.setAvailablePieces(interfaceInfoAddRequest.getAvailablePieces());
+            boolean saveCharging = interfaceChargingService.save(interfaceCharging);
+            if (!saveCharging) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR);
+            }
+        }
         if (!result) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR);
         }
@@ -252,7 +271,15 @@ public class InterfaceInfoController {
         String accessKey = loginUser.getAccessKey();
         String secretKey = loginUser.getSecretKey();
 
-        // todo 用户调用次数校验
+        // 用户调用次数校验
+        QueryWrapper<UserInterfaceInfo> userInterfaceInfoQueryWrapper = new QueryWrapper<>();
+        userInterfaceInfoQueryWrapper.eq("userId", loginUser.getId());
+        userInterfaceInfoQueryWrapper.eq("interfaceId", id);
+        UserInterfaceInfo userInterfaceInfo = userInterfaceInfoService.getOne(userInterfaceInfoQueryWrapper);
+        int leftNum = userInterfaceInfo.getLeftNum();
+        if(leftNum <= 0){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用次数不足！");
+        }
 
         // 动态调用接口
         Object res = invokeInterfaceInfo(BinApiClient.class, interfaceInfo.getMethodName(), userRequestParams, accessKey, secretKey);
@@ -326,4 +353,8 @@ public class InterfaceInfoController {
     public BaseResponse<Page<InterfaceInfo>> search(@RequestBody InterfaceInfoSearchRequest interfaceInfoSearchRequest) {
         return ResultUtils.success(interfaceInfoSearchFacade.searchAll(interfaceInfoSearchRequest));
     }
+
+
+
+
 }

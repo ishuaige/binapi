@@ -9,17 +9,16 @@ import java.util.stream.Collectors;
  *
  * @author niuma
  */
-public enum InterfaceInfoStatusEnum {
+public enum InterfaceInfoAuditStatusEnum {
 
-    OFFLINE("关闭", 0),
-    ONLINE("上线", 1),
-    PENDING("待审核", 2);
+    PENDING("待审核", 0),
+    FINISH("审核结束", 1);
 
     private final String text;
 
     private final int value;
 
-    InterfaceInfoStatusEnum(String text, int value) {
+    InterfaceInfoAuditStatusEnum(String text, int value) {
         this.text = text;
         this.value = value;
     }
