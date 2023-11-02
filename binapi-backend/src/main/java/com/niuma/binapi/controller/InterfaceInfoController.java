@@ -274,8 +274,11 @@ public class InterfaceInfoController {
         // 用户调用次数校验
         QueryWrapper<UserInterfaceInfo> userInterfaceInfoQueryWrapper = new QueryWrapper<>();
         userInterfaceInfoQueryWrapper.eq("userId", loginUser.getId());
-        userInterfaceInfoQueryWrapper.eq("interfaceId", id);
+        userInterfaceInfoQueryWrapper.eq("interfaceInfoId", id);
         UserInterfaceInfo userInterfaceInfo = userInterfaceInfoService.getOne(userInterfaceInfoQueryWrapper);
+        if(userInterfaceInfo == null){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用次数不足！");
+        }
         int leftNum = userInterfaceInfo.getLeftNum();
         if(leftNum <= 0){
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用次数不足！");
