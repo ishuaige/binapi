@@ -4,6 +4,7 @@ import com.niuma.binapicommon.model.entity.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 
@@ -17,6 +18,24 @@ class UserServiceTest {
 
     @Resource
     private UserService userService;
+
+
+    @Test
+    void userRegister() {
+        // 注册一个用户，无需手机验证码
+        String password = DigestUtils.md5DigestAsHex(("dogbin" + "12345678").getBytes());
+        User user = new User();
+        user.setUserName("dogbin");
+        user.setUserAccount("dogbin");
+        user.setGender(0);
+        user.setUserRole("admin");
+        user.setUserPassword(password);
+        user.setPhoneNum("13623123123");
+        user.setAccessKey("aaaaa");
+        user.setSecretKey("bbbbb");
+        boolean save = userService.save(user);
+        System.out.println(save);
+    }
 
     @Test
     void testAddUser() {
@@ -45,13 +64,5 @@ class UserServiceTest {
         Assertions.assertNotNull(user);
     }
 
-    @Test
-    void userRegister() {
 
-        try {
-
-        } catch (Exception e) {
-
-        }
-    }
 }

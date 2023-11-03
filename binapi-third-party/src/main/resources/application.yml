@@ -1,0 +1,67 @@
+#spring:
+#  application:
+#    name: binapi-third
+#  cloud:
+#    nacos:
+#      discovery:
+#        server-addr: localhost:8848
+#  # DataSource Config
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://localhost:3306/binapi
+#    username: root
+#    password: 123456
+#  mvc:
+#    pathmatch:
+#      matching-strategy: ANT_PATH_MATCHER
+#  # redis
+#  redis:
+#    port: 6379
+#    host: localhost
+#    database: 0
+#  rabbitmq:
+#    host: 127.0.0.1
+#    port: 5672
+#    publisher-confirm-type: correlated #开启发送端确认
+#    publisher-returns: true #开启发送端消息抵达队列的确认
+#    template:
+#      mandatory: true #只要抵达队列，以异步发送优先回调我们这个returnsConfirm
+#server:
+#  port: 8004
+#  servlet:
+#    context-path: /api/third
+#mybatis-plus:
+#  configuration:
+#    map-underscore-to-camel-case: false
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#  global-config:
+#    db-config:
+#      logic-delete-field: isDelete
+#      logic-delete-value: 1
+#      logic-not-delete-value: 0
+#dubbo:
+#  application:
+#    name: binapi-third-party-dubbo
+#  protocol:
+#    name: dubbo
+#    port: -1
+#  registry:
+#    address: nacos://localhost:8848
+#    # 配置namespace
+#    parameters:
+#      namespace: 16239c21-ac42-46bc-a4e7-690e64272f5a
+##腾讯短信服务
+#tencent:
+#  secretId: xxx
+#  secretKey: xxx
+#  sdkAppId: xxx
+#  signName: xxx
+#  templateId: xxx
+##阿里云oss
+#aliyun:
+#  oss:
+#    file:
+#      endpoint: oss-cn-guangzhou.aliyuncs.com
+#      keyid: yourAccessKeyId
+#      keysecret: yourSecret
+#      bucketname: niumazlb
