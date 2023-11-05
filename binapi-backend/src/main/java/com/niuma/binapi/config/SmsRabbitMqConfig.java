@@ -5,9 +5,15 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +27,9 @@ import static com.niuma.binapicommon.constant.RabbitMqConstant.*;
 @Configuration
 public class SmsRabbitMqConfig {
 
+    @Autowired
+    @Lazy
+    RabbitAdmin rabbitAdmin;
 
     /**
      * 普通队列
@@ -73,5 +82,18 @@ public class SmsRabbitMqConfig {
         return new Binding(SMS_DELAY_QUEUE_NAME, Binding.DestinationType.QUEUE,SMS_EXCHANGE_NAME,SMS_DELAY_EXCHANGE_ROUTING_KEY,null);
     }
 
+
+    @Bean
+    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
+        RabbitAdmin rabbitAdmin = new RabbitAdmin(connectionFactory);
+        rabbitAdmin.setAutoStartup(true);
+        return rabbitAdmin;
+    }
+    @Bean
+    public void init(){
+        rabbitAdmin.declareExchange(smsExchange());
+        rabbitAdmin.declareQueue(smsQueue());
+        rabbitAdmin.declareQueue(smsDeadLetter());
+    }
 
 }
