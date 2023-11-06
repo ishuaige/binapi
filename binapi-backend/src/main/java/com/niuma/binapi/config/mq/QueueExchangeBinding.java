@@ -39,15 +39,13 @@ public class QueueExchangeBinding {
     }
 
     private List<MqProperties.QueueBinding> getBinApiQueueBinding(){
-        Map<String, Object> arguments = new HashMap<>();
-        //声明死信队列和交换机消息，过期时间：1分钟
-        arguments.put("x-dead-letter-exchange", RabbitMqConstant.SMS_EXCHANGE_TOPIC_NAME);
-        arguments.put("x-dead-letter-routing-key", RabbitMqConstant.SMS_DELAY_EXCHANGE_ROUTING_KEY);
-        arguments.put("x-message-ttl", 60000);
-        List<MqProperties.QueueBinding> list = Arrays.asList(
+        return Arrays.asList(
                 new MqProperties.QueueBinding(RabbitMqConstant.SMS_EXCHANGE_TOPIC_NAME, RabbitMqConstant.SMS_QUEUE_NAME, RabbitMqConstant.SMS_EXCHANGE_ROUTING_KEY),
-                new MqProperties.QueueBinding(RabbitMqConstant.SMS_EXCHANGE_TOPIC_NAME, RabbitMqConstant.SMS_DELAY_QUEUE_NAME, RabbitMqConstant.SMS_DELAY_EXCHANGE_ROUTING_KEY, new MqExchangeConfigPar(null, true, false, arguments))
+                new MqProperties.QueueBinding(RabbitMqConstant.SMS_EXCHANGE_TOPIC_NAME, RabbitMqConstant.SMS_DELAY_QUEUE_NAME, RabbitMqConstant.SMS_DELAY_EXCHANGE_ROUTING_KEY),
+
+                new MqProperties.QueueBinding(RabbitMqConstant.ORDER_EXCHANGE_TOPIC_NAME, RabbitMqConstant.ORDER_SEND_QUEUE_NAME, RabbitMqConstant.ORDER_SEND_EXCHANGE_ROUTING_KEY),
+                new MqProperties.QueueBinding(RabbitMqConstant.ORDER_EXCHANGE_TOPIC_NAME, RabbitMqConstant.ORDER_TIMEOUT_QUEUE_NAME, RabbitMqConstant.ORDER_TIMEOUT_EXCHANGE_ROUTING_KEY),
+                new MqProperties.QueueBinding(RabbitMqConstant.ORDER_EXCHANGE_TOPIC_NAME, RabbitMqConstant.ORDER_SUCCESS_QUEUE_NAME, RabbitMqConstant.ORDER_SUCCESS_EXCHANGE_ROUTING_KEY)
         );
-        return list;
     }
 }

@@ -2,22 +2,23 @@ package com.niuma.binapi.config.mq;
 
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.AcknowledgeMode;
-import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.support.AbstractBeanFactory;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.boot.autoconfigure.amqp.SimpleRabbitListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -29,31 +30,42 @@ import java.util.stream.Collectors;
 import static com.rabbitmq.client.ConnectionFactory.DEFAULT_CONNECTION_TIMEOUT;
 
 /**
+ * RabbitMq配置-新
+ *
  * @author niuma
  */
-@Configurable
+@Component
 public class RabbitMqConfig implements BeanFactoryAware {
-    @Autowired
+    @Resource
     private QueueExchangeBinding queueExchangeBinding;
 
+    /**
+     * 默认的连接工厂
+     *
+     * @param rabbitProperties
+     * @return
+     */
     @Bean(MqProperties.ConnectionFactory.BINAPI)
     @Primary
     public ConnectionFactory defaultConnectionFactory(RabbitProperties rabbitProperties) {
         return newConnectionFactory("/" + MqProperties.VHOST.BINAPI, rabbitProperties);
     }
 
+    /**
+     * Aware接口介绍 https://juejin.cn/post/7110856807039369246
+     *
+     * @param beanFactory
+     */
     @Override
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+    public void setBeanFactory(BeanFactory beanFactory) {
         AbstractBeanFactory register = (AbstractBeanFactory) beanFactory;
         // 注册交换器
-        MqProperties.Exchange.FANOUT_EXCHANGES.forEach(exchange ->
-                register.registerSingleton(exchange, new FanoutExchange(exchange, true, false)));
-        MqProperties.Exchange.TOPIC_EXCHANGES.forEach(exchange ->
-                register.registerSingleton(exchange, new TopicExchange(exchange, true, false)));
+        MqProperties.ExchangeInfo.EXCHANGE_LIST.forEach(exchange -> register.registerSingleton(exchange.getName(), exchange));
 
         SimpleRabbitListenerContainerFactoryConfigurer configurer = register
                 .getBean(SimpleRabbitListenerContainerFactoryConfigurer.class);
         RabbitProperties properties = register.getBean(RabbitProperties.class);
+        // key -> 连接工厂名 value -> 连接工厂
         Map<String, ConnectionFactory> connectionFactoryMap = MqProperties.VHOST.OTHER_SYSTEM_VHOSTS.stream()
                 .collect(Collectors.toMap(Function.identity(),
                         vhost -> {
@@ -68,25 +80,31 @@ public class RabbitMqConfig implements BeanFactoryAware {
                         }));
 
         for (Map.Entry<String, List<MqProperties.QueueBinding>> entry : queueExchangeBinding.getQueueExchangeBindingMap().entrySet()) {
-            declareQueueAndBindingExchange(connectionFactoryMap.get( entry.getKey()), entry.getValue());
+            declareQueueAndBindingExchange(connectionFactoryMap.get(entry.getKey()), entry.getValue());
         }
     }
 
+    /**
+     * 声明队列和绑定交换机
+     *
+     * @param connectionFactory 连接工厂，多个消息队列有不同的连接工厂
+     * @param queueBindings     队列绑定参数
+     * @return
+     */
     private String[] declareQueueAndBindingExchange(ConnectionFactory connectionFactory,
                                                     List<MqProperties.QueueBinding> queueBindings) {
         try {
+            RabbitAdmin rabbitAdmin = new RabbitAdmin(connectionFactory);
+            // 注册、创建交换器
+            MqProperties.ExchangeInfo.EXCHANGE_LIST.forEach(rabbitAdmin::declareExchange);
+            // 创建队列
+            MqProperties.QueueInfo.QUEUE_LIST.forEach(rabbitAdmin::declareQueue);
+
             for (MqProperties.QueueBinding binding : queueBindings) {
                 String queue = binding.queue;
                 String exchange = binding.exchange;
-                Channel channel = connectionFactory.createConnection().createChannel(false);
-                channel.queueDeclare(queue, true, false, false, null);
-                try {
-                    channel.exchangeDeclarePassive(exchange);
-                } catch (IOException ex) {
-                    channel = connectionFactory.createConnection().createChannel(false);
-                    crtExchange(exchange, channel, binding.getMqExchangeConfigPar());
-                }
                 String routingKey = binding.bindingKey;
+                Channel channel = connectionFactory.createConnection().createChannel(false);
                 channel.queueBind(queue, exchange, routingKey);
             }
             return queueBindings.stream().map(MqProperties.QueueBinding::getQueue).distinct().toArray(String[]::new);
@@ -95,29 +113,12 @@ public class RabbitMqConfig implements BeanFactoryAware {
         }
     }
 
-    private void crtExchange(String exchange, Channel channel, MqExchangeConfigPar mqExchangeConfigPar)
-            throws IOException {
-        boolean durable = Optional.ofNullable(mqExchangeConfigPar)
-                .map(MqExchangeConfigPar::getDurable)
-                .orElse(true);
-        String exchangeType = Optional.ofNullable(mqExchangeConfigPar)
-                .map(MqExchangeConfigPar::getType)
-                .orElse(getDefaultExchangeType(exchange));
-        Boolean autoDeleted = Optional.ofNullable(mqExchangeConfigPar)
-                .map(MqExchangeConfigPar::getAutoDelete)
-                .orElse(false);
-        Map<String, Object> argMap = Optional.ofNullable(mqExchangeConfigPar)
-                .map(MqExchangeConfigPar::getArguments)
-                .orElse(new HashMap<>());
-        channel.exchangeDeclare(exchange, exchangeType ,durable, autoDeleted, argMap);
-    }
-
-    private String getDefaultExchangeType(String exchange) {
-        return exchange.contains("fanout") ? "fanout" : "topic";
-    }
-
-
-    /** 通过虚拟目录创建 ConnectionFactory，其他属性无差异 */
+    /**
+     * 通过虚拟目录创建 ConnectionFactory，其他属性无差异
+     * @param vhost 虚拟目录名
+     * @param rabbitProperties mq的参数
+     * @return
+     */
     private ConnectionFactory newConnectionFactory(String vhost, RabbitProperties rabbitProperties) {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
         connectionFactory.setHost(rabbitProperties.getHost());
@@ -134,7 +135,14 @@ public class RabbitMqConfig implements BeanFactoryAware {
         return connectionFactory;
     }
 
-    /** 创建 ListenerContainerFactory */
+    /**
+     * 创建 ListenerContainerFactory
+     * <p>
+     *     SimpleRabbitListenerContainerFactory 是用于创建简单的消息监听容器的工厂类。
+     * 它提供了一种统一的方式来创建消息监听容器，可以设置并发消费者数量、线程池大小、消息确认模式等参数。
+     * 通过使用 SimpleRabbitListenerContainerFactory，可以方便地创建适合不同需求的消息监听容器。
+     * </p>
+     */
     public SimpleRabbitListenerContainerFactory getMqListenerContainerFactory(SimpleRabbitListenerContainerFactoryConfigurer configurer,
                                                                               ConnectionFactory connectionFactory) {
         SimpleRabbitListenerContainerFactory listenerContainerFactory = new SimpleRabbitListenerContainerFactory();
