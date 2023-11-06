@@ -12,11 +12,12 @@ import java.util.Map;
 import static com.niuma.binapicommon.constant.RabbitMqConstant.*;
 
 /**
- * RabbitMQ配置
+ * RabbitMQ配置 - 统一在backend模块创建
  * @author niumazlb
  */
 @Slf4j
-@Configuration
+//@Configuration
+@Deprecated
 public class OrderRabbitMqConfig {
 
 
@@ -28,11 +29,15 @@ public class OrderRabbitMqConfig {
     public Queue orderQueue(){
         Map<String, Object> arguments = new HashMap<>();
         //声明死信队列和交换机消息，过期时间：30分钟
-        arguments.put("x-dead-letter-exchange", ORDER_EXCHANGE_NAME);
+        arguments.put("x-dead-letter-exchange", ORDER_EXCHANGE_TOPIC_NAME);
         arguments.put("x-dead-letter-routing-key", ORDER_TIMEOUT_EXCHANGE_ROUTING_KEY);
         arguments.put("x-message-ttl", 30*60000);
        // arguments.put("x-message-ttl", 60000);// 这里测试1分钟
-        return new Queue(ORDER_SEND_EXCHANGE_ROUTING_KEY,true,false,false ,arguments);
+        return QueueBuilder
+                .durable(ORDER_SEND_QUEUE_NAME)
+                .deadLetterExchange(ORDER_EXCHANGE_TOPIC_NAME)
+                .deadLetterRoutingKey(ORDER_TIMEOUT_EXCHANGE_ROUTING_KEY)
+                .ttl(30 * 60000).build();
     }
 
     /**
@@ -41,7 +46,7 @@ public class OrderRabbitMqConfig {
      */
     @Bean("ORDER_DEAD_LETTER")
     public Queue orderDeadLetter(){
-        return new Queue(ORDER_TIMEOUT_QUEUE_NAME, true, false, false);
+        return QueueBuilder.durable(ORDER_TIMEOUT_QUEUE_NAME).build();
     }
 
     /**
@@ -50,7 +55,7 @@ public class OrderRabbitMqConfig {
      */
     @Bean("ORDER_EXCHANGE")
     public Exchange orderExchange() {
-        return new TopicExchange(ORDER_EXCHANGE_NAME, true, false);
+        return ExchangeBuilder.topicExchange(ORDER_EXCHANGE_TOPIC_NAME).durable(true).build();
     }
 
 
@@ -61,8 +66,6 @@ public class OrderRabbitMqConfig {
     @Bean
     public Binding orderBinding(@Qualifier("ORDER_QUEUE") Queue orderQueue,@Qualifier("ORDER_EXCHANGE") Exchange orderExchange){
         return BindingBuilder.bind(orderQueue).to(orderExchange).with(ORDER_SEND_EXCHANGE_ROUTING_KEY).noargs();
-//        return new Binding(ORDER_SEND_QUEUE_NAME, Binding.DestinationType.QUEUE,ORDER_EXCHANGE_NAME,ORDER_SEND_EXCHANGE_ROUTING_KEY,null);
-
     }
 
     /**
@@ -72,7 +75,6 @@ public class OrderRabbitMqConfig {
     @Bean
     public Binding orderDelayBinding(@Qualifier("ORDER_DEAD_LETTER") Queue orderDeadLetter,@Qualifier("ORDER_EXCHANGE") Exchange orderExchange){
         return BindingBuilder.bind(orderDeadLetter).to(orderExchange).with(ORDER_TIMEOUT_EXCHANGE_ROUTING_KEY).noargs();
-//        return new Binding(ORDER_TIMEOUT_QUEUE_NAME, Binding.DestinationType.QUEUE,ORDER_EXCHANGE_NAME,ORDER_TIMEOUT_EXCHANGE_ROUTING_KEY,null);
     }
 
 

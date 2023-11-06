@@ -39,7 +39,7 @@ public class OrderMqUtils implements RabbitTemplate.ConfirmCallback,RabbitTempla
         finalId = order.getId();
         redisTemplate.opsForValue().set(RedisConstant.SEND_ORDER_PREFIX+order.getId(),order);
         String finalMessageId = IdUtil.simpleUUID();
-        rabbitTemplate.convertAndSend(RabbitMqConstant.ORDER_EXCHANGE_NAME,RabbitMqConstant.ORDER_SEND_EXCHANGE_ROUTING_KEY,order, message -> {
+        rabbitTemplate.convertAndSend(RabbitMqConstant.ORDER_EXCHANGE_TOPIC_NAME,RabbitMqConstant.ORDER_SEND_EXCHANGE_ROUTING_KEY,order, message -> {
             MessageProperties messageProperties = message.getMessageProperties();
             //生成全局唯一id
             messageProperties.setMessageId(finalMessageId);
