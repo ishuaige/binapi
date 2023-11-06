@@ -2,23 +2,21 @@ package com.niuma.binapithirdparty.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.niuma.binapicommon.constant.RabbitMqConstant.*;
 
 /**
- * RabbitMQ配置
+ * RabbitMQ配置 - 统一在backend模块创建
  * @author niumazlb
  */
 @Slf4j
-@Configuration
+//@Configuration
+@Deprecated
 public class AliPayRabbitMqConfig {
 
 
@@ -28,8 +26,7 @@ public class AliPayRabbitMqConfig {
      */
     @Bean
     public Queue alipayQueue(){
-
-        return new Queue(ORDER_SUCCESS_QUEUE_NAME,true,false,false ,null);
+        return QueueBuilder.durable(ORDER_SUCCESS_QUEUE_NAME).build();
     }
 
 
@@ -39,7 +36,7 @@ public class AliPayRabbitMqConfig {
      */
     @Bean
     public Binding alipayBinding(){
-        return new Binding(ORDER_SUCCESS_QUEUE_NAME, Binding.DestinationType.QUEUE,ORDER_EXCHANGE_NAME,ORDER_SUCCESS_EXCHANGE_ROUTING_KEY,null);
+        return new Binding(ORDER_SUCCESS_QUEUE_NAME, Binding.DestinationType.QUEUE, ORDER_EXCHANGE_TOPIC_NAME,ORDER_SUCCESS_EXCHANGE_ROUTING_KEY,null);
     }
 
 }

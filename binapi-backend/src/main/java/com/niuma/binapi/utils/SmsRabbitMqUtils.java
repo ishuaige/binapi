@@ -62,7 +62,7 @@ public class SmsRabbitMqUtils implements RabbitTemplate.ConfirmCallback, RabbitT
             finalId = messageId;
             this.smsDTO = smsDTO;
             // 将消息投递到MQ，并设置消息的一些参数
-            rabbitTemplate.convertAndSend(RabbitMqConstant.SMS_EXCHANGE_NAME, RabbitMqConstant.SMS_EXCHANGE_ROUTING_KEY, smsDTO, message -> {
+            rabbitTemplate.convertAndSend(RabbitMqConstant.SMS_EXCHANGE_TOPIC_NAME, RabbitMqConstant.SMS_EXCHANGE_ROUTING_KEY, smsDTO, message -> {
                 MessageProperties messageProperties = message.getMessageProperties();
                 //生成全局唯一id
                 messageProperties.setMessageId(finalMessageId);

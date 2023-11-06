@@ -1,26 +1,29 @@
 package com.niuma.binapi.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.Exchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
-import java.util.Map;
 
 import static com.niuma.binapicommon.constant.RabbitMqConstant.*;
 
 /**
- * RabbitMQ配置
+ * RabbitMQ配置-已废弃，该方法在队列和交换机数量增加时，不便于管理和维护，并且采用的为延迟加载方式，在启动时不会自动创建队列，导致其他项目因为找不到队列而报错
  * @author niumazlb
  */
 @Slf4j
-@Configuration
+//@Configuration
+@Deprecated
 public class SmsRabbitMqConfig {
 
+    @Resource
+    @Lazy
+    RabbitAdmin rabbitAdmin;
 
     /**
      * 普通队列
@@ -28,12 +31,11 @@ public class SmsRabbitMqConfig {
      */
     @Bean
     public Queue smsQueue(){
-        Map<String, Object> arguments = new HashMap<>();
         //声明死信队列和交换机消息，过期时间：1分钟
-        arguments.put("x-dead-letter-exchange", SMS_EXCHANGE_NAME);
-        arguments.put("x-dead-letter-routing-key", SMS_DELAY_EXCHANGE_ROUTING_KEY);
-        arguments.put("x-message-ttl", 60000);
-        return new Queue(SMS_QUEUE_NAME,true,false,false ,arguments);
+        return QueueBuilder.durable(SMS_QUEUE_NAME)
+                .deadLetterExchange(SMS_EXCHANGE_TOPIC_NAME)
+                .deadLetterRoutingKey(SMS_DELAY_EXCHANGE_ROUTING_KEY)
+                .ttl(60000).build();
     }
 
     /**
@@ -42,7 +44,7 @@ public class SmsRabbitMqConfig {
      */
     @Bean
     public Queue smsDeadLetter(){
-        return new Queue(SMS_DELAY_QUEUE_NAME, true, false, false);
+        return QueueBuilder.durable(SMS_DELAY_QUEUE_NAME).build();
     }
 
     /**
@@ -51,7 +53,7 @@ public class SmsRabbitMqConfig {
      */
     @Bean
     public Exchange smsExchange() {
-        return new TopicExchange(SMS_EXCHANGE_NAME, true, false);
+        return ExchangeBuilder.topicExchange(SMS_EXCHANGE_TOPIC_NAME).durable(true).build();
     }
 
 
@@ -61,7 +63,7 @@ public class SmsRabbitMqConfig {
      */
     @Bean
     public Binding smsBinding(){
-        return new Binding(SMS_QUEUE_NAME, Binding.DestinationType.QUEUE,SMS_EXCHANGE_NAME,SMS_EXCHANGE_ROUTING_KEY,null);
+        return BindingBuilder.bind(smsQueue()).to(smsExchange()).with(SMS_EXCHANGE_ROUTING_KEY).and(new HashMap<>());
     }
 
     /**
@@ -70,8 +72,22 @@ public class SmsRabbitMqConfig {
      */
     @Bean
     public Binding smsDelayBinding(){
-        return new Binding(SMS_DELAY_QUEUE_NAME, Binding.DestinationType.QUEUE,SMS_EXCHANGE_NAME,SMS_DELAY_EXCHANGE_ROUTING_KEY,null);
+        return BindingBuilder.bind(smsDeadLetter()).to(smsExchange()).with(SMS_DELAY_EXCHANGE_ROUTING_KEY).and(new HashMap<>());
     }
 
+
+    @Bean
+    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
+        RabbitAdmin rabbitAdmin = new RabbitAdmin(connectionFactory);
+        rabbitAdmin.setAutoStartup(true);
+        return rabbitAdmin;
+    }
+    @Bean
+    public void init(){
+        // 使用这个方法它才会在项目启动时自动创建队列
+        rabbitAdmin.declareExchange(smsExchange());
+        rabbitAdmin.declareQueue(smsQueue());
+        rabbitAdmin.declareQueue(smsDeadLetter());
+    }
 
 }
