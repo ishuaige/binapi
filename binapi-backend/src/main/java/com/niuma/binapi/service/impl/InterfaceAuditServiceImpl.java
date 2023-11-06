@@ -50,17 +50,28 @@ public class InterfaceAuditServiceImpl extends ServiceImpl<InterfaceAuditMapper,
         if (interfaceAuditRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
+        Long id = interfaceAuditRequest.getId();
+        Integer auditStatus = interfaceAuditRequest.getAuditStatus();
+        if(id == null || auditStatus == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
         // 1. 修改审核表
         //  1.1 根据id查询接口审核表
         InterfaceAudit interfaceAudit = this.getById(interfaceAuditRequest.getId());
         if (interfaceAudit == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        // 1.2 增加审批人、备注字段，修改审核状态为审核完毕
+        // 1.2 增加审批人、备注字段，修改审核状态
         interfaceAudit.setRemark(interfaceAuditRequest.getRemark());
         interfaceAudit.setApproverId(loginUser.getId());
-        interfaceAudit.setAuditStatus(InterfaceInfoAuditStatusEnum.FINISH.getValue());
+        interfaceAudit.setAuditStatus(interfaceAuditRequest.getAuditStatus());
         boolean updateAudit = this.updateById(interfaceAudit);
+
+        // 判断是否审批通过，审批未通过直接返回
+        if (interfaceAuditRequest.getAuditStatus() != InterfaceInfoAuditStatusEnum.PASS.getValue()) {
+            return true;
+        }
 
         // 2. 修改接口信息表
         //  2.1 根据id查询接口

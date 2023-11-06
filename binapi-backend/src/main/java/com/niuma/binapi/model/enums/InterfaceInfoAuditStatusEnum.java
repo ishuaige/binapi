@@ -12,7 +12,10 @@ import java.util.stream.Collectors;
 public enum InterfaceInfoAuditStatusEnum {
 
     PENDING("待审核", 0),
-    FINISH("审核结束", 1);
+    // 审核通过
+    PASS("审核通过", 1),
+    // 审核不通过
+    FAIL("审核不通过", 2);
 
     private final String text;
 

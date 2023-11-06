@@ -19,7 +19,6 @@ public class InterfaceAuditRequest implements Serializable {
     /**
      * 主键
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
 
@@ -27,6 +26,11 @@ public class InterfaceAuditRequest implements Serializable {
      * 备注
      */
     private String remark;
+
+    /**
+     * 审批状态 1-通过 2-拒绝
+     */
+    private Integer auditStatus;
 
 
 
