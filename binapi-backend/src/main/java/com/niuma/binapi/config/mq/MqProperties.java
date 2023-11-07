@@ -104,9 +104,6 @@ public class MqProperties {
 
     /**
      * 消息监听时，队列绑定关系
-     *
-     * @user chenshutian
-     * @date 2021/5/15
      */
     @lombok.Value
     public static class QueueBinding {
@@ -114,27 +111,17 @@ public class MqProperties {
         public String exchange;
         public String queue;
         public String bindingKey;
-        public MqExchangeConfigPar mqExchangeConfigPar;
 
         public QueueBinding(String exchange, String queue) {
             this.exchange = exchange;
             this.queue = queue;
             this.bindingKey = "#";
-            mqExchangeConfigPar = null;
         }
 
         public QueueBinding(String exchange, String queue, String bindingKey) {
             this.exchange = exchange;
             this.queue = queue;
             this.bindingKey = bindingKey;
-            mqExchangeConfigPar = null;
-        }
-
-        public QueueBinding(String exchange, String queue, String bindingKey, MqExchangeConfigPar mqExchangeConfigPar) {
-            this.exchange = exchange;
-            this.queue = queue;
-            this.bindingKey = bindingKey;
-            this.mqExchangeConfigPar = mqExchangeConfigPar;
         }
     }
 

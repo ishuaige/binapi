@@ -7,6 +7,7 @@ import java.util.*;
 
 
 /**
+ * 队列交换机绑定关系
  * @author niuma
  */
 @Component
