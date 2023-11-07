@@ -70,17 +70,4 @@ public class InterfaceAuditController {
         return ResultUtils.success(interfaceAuditService.auditInterface(interfaceAuditRequest,user));
     }
 
-    /**
-     * 用户添加接口
-     * @param interfaceInfoAddRequest
-     * @param request
-     * @return
-     */
-    @PostMapping("/userAdd")
-    public BaseResponse<Boolean> userAdd(@RequestBody InterfaceInfoAddRequest interfaceInfoAddRequest, HttpServletRequest request) {
-        User loginUser = userService.getLoginUser(request);
-        boolean b = interfaceAuditService.userAddInterface(interfaceInfoAddRequest, loginUser);
-        return ResultUtils.success(b);
-    }
-
 }

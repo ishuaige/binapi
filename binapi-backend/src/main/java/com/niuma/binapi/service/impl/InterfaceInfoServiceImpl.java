@@ -4,16 +4,25 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.niuma.binapi.mapper.InterfaceInfoMapper;
+import com.niuma.binapi.model.dto.interfaceinfo.InterfaceInfoAddRequest;
 import com.niuma.binapi.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
+import com.niuma.binapi.model.entity.InterfaceAudit;
+import com.niuma.binapi.model.entity.InterfaceCharging;
 import com.niuma.binapi.model.enums.InterfaceInfoStatusEnum;
+import com.niuma.binapi.service.InterfaceAuditService;
+import com.niuma.binapi.service.InterfaceChargingService;
 import com.niuma.binapi.service.InterfaceInfoService;
 import com.niuma.binapicommon.common.ErrorCode;
 import com.niuma.binapicommon.constant.CommonConstant;
 import com.niuma.binapicommon.exception.BusinessException;
 import com.niuma.binapicommon.model.entity.InterfaceInfo;
+import com.niuma.binapicommon.model.entity.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 /**
 * @author niumazlb
@@ -23,6 +32,71 @@ import org.springframework.stereotype.Service;
 @Service
 public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, InterfaceInfo>
     implements InterfaceInfoService {
+
+
+    @Resource
+    private InterfaceAuditService interfaceAuditService;
+    @Resource
+    private InterfaceChargingService interfaceChargingService;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long userAddInterface(InterfaceInfoAddRequest interfaceInfoAddRequest, User user) {
+        if (interfaceInfoAddRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        InterfaceInfo interfaceInfo = saveInfoAndCharging(interfaceInfoAddRequest, user);
+        InterfaceAudit interfaceAudit = new InterfaceAudit();
+        interfaceAudit.setInterfaceId(interfaceInfo.getId());
+        interfaceAudit.setUserId(user.getId());
+        boolean saveAudit = interfaceAuditService.save(interfaceAudit);
+        if (!saveAudit) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR);
+        }
+        return interfaceInfo.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long adminAddInterface(InterfaceInfoAddRequest interfaceInfoAddRequest, User user) {
+        if (interfaceInfoAddRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        InterfaceInfo interfaceInfo = saveInfoAndCharging(interfaceInfoAddRequest, user);
+        Long newInterfaceInfoId = interfaceInfo.getId();
+        if (newInterfaceInfoId == null) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR);
+        }
+        return newInterfaceInfoId;
+    }
+
+    private InterfaceInfo saveInfoAndCharging(InterfaceInfoAddRequest interfaceInfoAddRequest, User user){
+        InterfaceInfo interfaceInfo = new InterfaceInfo();
+        BeanUtils.copyProperties(interfaceInfoAddRequest, interfaceInfo);
+        // 校验
+        this.validInterfaceInfo(interfaceInfo, true);
+        interfaceInfo.setUserId(user.getId());
+        interfaceInfo.setStatus(InterfaceInfoStatusEnum.PENDING.getValue());
+        boolean saveInfo = this.save(interfaceInfo);
+        // 判断接口是否收费，插入收费信息
+        if (interfaceInfoAddRequest.isNeedCharge()) {
+            InterfaceCharging interfaceCharging = new InterfaceCharging();
+            interfaceCharging.setInterfaceId(interfaceInfo.getId());
+            interfaceCharging.setCharging(interfaceInfoAddRequest.getCharging());
+            interfaceCharging.setAvailablePieces(interfaceInfoAddRequest.getAvailablePieces());
+            interfaceCharging.setUserId(user.getId());
+            boolean saveCharging = interfaceChargingService.save(interfaceCharging);
+            if (!saveCharging) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR);
+            }
+        }
+        if(!saveInfo){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR);
+        }
+        return interfaceInfo;
+    }
+
 
 
 

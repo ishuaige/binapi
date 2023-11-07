@@ -90,40 +90,6 @@ public class InterfaceAuditServiceImpl extends ServiceImpl<InterfaceAuditMapper,
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean userAddInterface(InterfaceInfoAddRequest interfaceInfoAddRequest, User user) {
-        if (interfaceInfoAddRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-
-        InterfaceInfo interfaceInfo = new InterfaceInfo();
-        BeanUtils.copyProperties(interfaceInfoAddRequest, interfaceInfo);
-        interfaceInfo.setUserId(user.getId());
-        interfaceInfo.setStatus(InterfaceInfoStatusEnum.PENDING.getValue());
-        boolean saveInfo = interfaceInfoService.save(interfaceInfo);
-        InterfaceAudit interfaceAudit = new InterfaceAudit();
-        interfaceAudit.setInterfaceId(interfaceInfo.getId());
-        interfaceAudit.setUserId(user.getId());
-        boolean saveAudit = this.save(interfaceAudit);
-        // 判断接口是否收费，插入收费信息
-        if (interfaceInfoAddRequest.isNeedCharge()) {
-            InterfaceCharging interfaceCharging = new InterfaceCharging();
-            interfaceCharging.setInterfaceId(interfaceInfo.getId());
-            interfaceCharging.setCharging(interfaceInfoAddRequest.getCharging());
-            interfaceCharging.setAvailablePieces(interfaceInfoAddRequest.getAvailablePieces());
-            interfaceCharging.setUserId(user.getId());
-            boolean saveCharging = interfaceChargingService.save(interfaceCharging);
-            if (!saveCharging) {
-                throw new BusinessException(ErrorCode.OPERATION_ERROR);
-            }
-        }
-        if (!saveInfo || !saveAudit) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR);
-        }
-        return true;
-    }
-
-    @Override
     public Page<InterfaceAuditVO> getInterfaceAuditListPage(InterfaceAuditQueryRequest interfaceAuditQueryRequest) {
         Long interfaceId = interfaceAuditQueryRequest.getInterfaceId();
         Long approverId = interfaceAuditQueryRequest.getApproverId();

@@ -26,14 +26,6 @@ public interface InterfaceAuditService extends IService<InterfaceAudit> {
     boolean auditInterface(InterfaceAuditRequest interfaceAuditRequest, User loginUser);
 
     /**
-     * 用户添加接口
-     * @param interfaceInfoAddRequest
-     * @param user
-     * @return
-     */
-    boolean userAddInterface(InterfaceInfoAddRequest interfaceInfoAddRequest, User user);
-
-    /**
      * 分页获取审核接口列表
      * @param interfaceAuditQueryRequest
      * @return

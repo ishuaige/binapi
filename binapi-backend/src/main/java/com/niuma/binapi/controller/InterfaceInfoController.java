@@ -13,6 +13,7 @@ import com.niuma.binapi.model.vo.InterfaceInfoVO;
 import com.niuma.binapi.service.*;
 import com.niuma.binapiclientsdk.client.BinApiClient;
 import com.niuma.binapicommon.common.*;
+import com.niuma.binapicommon.constant.UserConstant;
 import com.niuma.binapicommon.exception.BusinessException;
 import com.niuma.binapicommon.model.entity.InterfaceInfo;
 import com.niuma.binapicommon.model.entity.User;
@@ -46,8 +47,6 @@ public class InterfaceInfoController {
 
     @Resource
     private InterfaceChargingService interfaceChargingService;
-    @Resource
-    private InterfaceAuditService interfaceAuditService;
 
     @Resource
     private UserService userService;
@@ -68,35 +67,20 @@ public class InterfaceInfoController {
      * @return
      */
     @PostMapping("/add")
-    @AuthCheck(mustRole = "admin")
     @Transactional(rollbackFor = Exception.class)
     public BaseResponse<Long> addInterfaceInfo(@RequestBody InterfaceInfoAddRequest interfaceInfoAddRequest, HttpServletRequest request) {
         if (interfaceInfoAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        InterfaceInfo interfaceInfo = new InterfaceInfo();
-        BeanUtils.copyProperties(interfaceInfoAddRequest, interfaceInfo);
-        // 校验
-        interfaceInfoService.validInterfaceInfo(interfaceInfo, true);
+
         User loginUser = userService.getLoginUser(request);
-        interfaceInfo.setUserId(loginUser.getId());
-        boolean result = interfaceInfoService.save(interfaceInfo);
-        // 判断接口是否收费，插入收费信息
-        if (interfaceInfoAddRequest.isNeedCharge()) {
-            InterfaceCharging interfaceCharging = new InterfaceCharging();
-            interfaceCharging.setInterfaceId(interfaceInfo.getId());
-            interfaceCharging.setCharging(interfaceInfoAddRequest.getCharging());
-            interfaceCharging.setAvailablePieces(interfaceInfoAddRequest.getAvailablePieces());
-            boolean saveCharging = interfaceChargingService.save(interfaceCharging);
-            if (!saveCharging) {
-                throw new BusinessException(ErrorCode.OPERATION_ERROR);
-            }
-        }
-        if (!result) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR);
-        }
-        long newInterfaceInfoId = interfaceInfo.getId();
-        return ResultUtils.success(newInterfaceInfoId);
+        String userRole = loginUser.getUserRole();
+
+        return ResultUtils.success(
+                UserConstant.ADMIN_ROLE.equals(userRole) ?
+                interfaceInfoService.adminAddInterface(interfaceInfoAddRequest,loginUser) :
+                interfaceInfoService.userAddInterface(interfaceInfoAddRequest,loginUser)
+        );
     }
 
     /**

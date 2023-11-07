@@ -16,6 +16,23 @@ import javax.servlet.http.HttpServletRequest;
 */
 public interface InterfaceInfoService extends IService<InterfaceInfo> {
 
+
+    /**
+     * 添加接口信息-用户使用
+     * @param interfaceInfoAddRequest
+     * @param user
+     * @return
+     */
+    Long userAddInterface(InterfaceInfoAddRequest interfaceInfoAddRequest, User user);
+
+    /**
+     * 添加接口信息-管理员使用
+     * @param interfaceInfoAddRequest
+     * @param user
+     * @return
+     */
+    Long adminAddInterface(InterfaceInfoAddRequest interfaceInfoAddRequest, User user);
+
     /**
      * 校验
      *
