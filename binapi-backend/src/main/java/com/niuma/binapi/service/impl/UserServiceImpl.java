@@ -109,7 +109,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         AuthPhoneNumberUtil authPhoneNumberUtil = new AuthPhoneNumberUtil();
         if (!authPhoneNumberUtil.isPhoneNum(phoneNum)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "手机验证码错误");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "手机号错误");
         }
         //图形验证码
         String signature = request.getHeader("signature");

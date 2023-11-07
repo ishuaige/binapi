@@ -1,6 +1,7 @@
 package com.niuma.binapi.model.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.niuma.binapi.model.enums.InterfaceInfoStatusEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -94,5 +95,10 @@ public class InterfaceInfoVO implements Serializable {
      */
     @JsonFormat(shape=JsonFormat.Shape.STRING,pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Date updateTime;
+
+    /**
+     * 是否收费(默认免费)
+     */
+    private Integer isCharging;
 
 }

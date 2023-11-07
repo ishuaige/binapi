@@ -1,5 +1,6 @@
 package com.niuma.binapi.model.dto.interfaceinfo;
 
+import com.niuma.binapi.model.enums.InterfaceInfoStatusEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -47,9 +48,9 @@ public class InterfaceInfoAddRequest implements Serializable {
     private String method;
 
     /**
-     * 是否收费
+     * 是否收费(默认免费)
      */
-    private boolean needCharge;
+    private Integer isCharging = InterfaceInfoStatusEnum.FEE_FREE.getValue();
 
     /**
      * 计费规则（元/条）

@@ -84,6 +84,10 @@ public class InterfaceInfo implements Serializable {
      */
     @TableLogic
     private Integer isDelete;
+    /**
+     * 是否收费(0-否，1-是)
+     */
+    private Integer isCharging;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

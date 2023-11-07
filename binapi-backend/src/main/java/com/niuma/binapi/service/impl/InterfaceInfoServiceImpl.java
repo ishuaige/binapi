@@ -14,11 +14,13 @@ import com.niuma.binapi.service.InterfaceChargingService;
 import com.niuma.binapi.service.InterfaceInfoService;
 import com.niuma.binapicommon.common.ErrorCode;
 import com.niuma.binapicommon.constant.CommonConstant;
+import com.niuma.binapicommon.constant.UserConstant;
 import com.niuma.binapicommon.exception.BusinessException;
 import com.niuma.binapicommon.model.entity.InterfaceInfo;
 import com.niuma.binapicommon.model.entity.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,7 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
 
 
     @Resource
+    @Lazy
     private InterfaceAuditService interfaceAuditService;
     @Resource
     private InterfaceChargingService interfaceChargingService;
@@ -78,9 +81,13 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         this.validInterfaceInfo(interfaceInfo, true);
         interfaceInfo.setUserId(user.getId());
         interfaceInfo.setStatus(InterfaceInfoStatusEnum.PENDING.getValue());
+        // 如果是管理员状态直接为通过
+        if (user.getUserRole().equals(UserConstant.ADMIN_ROLE)) {
+            interfaceInfo.setStatus(InterfaceInfoStatusEnum.ONLINE.getValue());
+        }
         boolean saveInfo = this.save(interfaceInfo);
         // 判断接口是否收费，插入收费信息
-        if (interfaceInfoAddRequest.isNeedCharge()) {
+        if (interfaceInfoAddRequest.getCharging() == InterfaceInfoStatusEnum.FEE_PAY.getValue()) {
             InterfaceCharging interfaceCharging = new InterfaceCharging();
             interfaceCharging.setInterfaceId(interfaceInfo.getId());
             interfaceCharging.setCharging(interfaceInfoAddRequest.getCharging());
@@ -172,6 +179,7 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         String sortField = interfaceInfoQueryRequest.getSortField();
         String sortOrder = interfaceInfoQueryRequest.getSortOrder();
         String description = interfaceInfoQuery.getDescription();
+        Integer isCharging = interfaceInfoQuery.getIsCharging();
         // description 需支持模糊搜索
         interfaceInfoQuery.setDescription(null);
         interfaceInfoQuery.setName(null);
@@ -180,6 +188,7 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>(interfaceInfoQuery);
+        queryWrapper.eq(isCharging!= null, "isCharging", isCharging);
         queryWrapper.like(StringUtils.isNotBlank(description), "description", description);
         queryWrapper.like(StringUtils.isNotBlank(interfaceInfoQueryRequest.getName()), "name", interfaceInfoQueryRequest.getName());
         queryWrapper.orderBy(StringUtils.isNotBlank(sortField),

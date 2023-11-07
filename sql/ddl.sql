@@ -85,6 +85,7 @@ CREATE TABLE `interface_info`  (
                                    `createTime` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
                                    `updateTime` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
                                    `isDelete` tinyint(0) NOT NULL DEFAULT 0 COMMENT '是否删除(0-未删除，1-已删除)',
+                                   `isCharging` tinyint(0) NOT NULL DEFAULT 0 COMMENT '是否收费(0-不收费，1-收费)',
                                    `requestParams` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '请求参数',
                                    `userId` bigint(0) NOT NULL COMMENT '创建人',
                                    PRIMARY KEY (`id`) USING BTREE

@@ -13,7 +13,10 @@ public enum InterfaceInfoStatusEnum {
 
     OFFLINE("关闭", 0),
     ONLINE("上线", 1),
-    PENDING("待审核", 2);
+    PENDING("待审核", 2),
+    // 是否收费
+    FEE_FREE("免费", 0),
+    FEE_PAY("收费", 1);
 
     private final String text;
 

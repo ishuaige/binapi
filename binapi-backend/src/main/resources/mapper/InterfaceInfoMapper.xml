@@ -19,12 +19,13 @@
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
             <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+            <result property="isCharging" column="isCharging" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,name,methodName,description,
         url,requestHeader,responseHeader,
         status,method,userId,requestParams,
-        createTime,updateTime,isDelete
+        createTime,updateTime,isDelete,isCharging
     </sql>
 </mapper>

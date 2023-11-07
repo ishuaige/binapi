@@ -2,6 +2,7 @@ package com.niuma.binapi.model.dto.interfaceinfo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.niuma.binapi.model.enums.InterfaceInfoStatusEnum;
 import com.niuma.binapicommon.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -66,6 +67,11 @@ public class InterfaceInfoQueryRequest extends PageRequest implements Serializab
      * 创建人
      */
     private Long userId;
+
+    /**
+     * 是否收费(默认免费)
+     */
+    private Integer isCharging;
 
     private static final long serialVersionUID = 1L;
 }
