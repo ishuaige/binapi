@@ -248,8 +248,9 @@ public class InterfaceInfoController {
         if (interfaceInfo == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口不存在");
         }
-        if (interfaceInfo.getStatus() == InterfaceInfoStatusEnum.OFFLINE.getValue()) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口已关闭");
+        Integer status = interfaceInfo.getStatus();
+        if (status == InterfaceInfoStatusEnum.OFFLINE.getValue() || status == InterfaceInfoStatusEnum.PENDING.getValue()) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口已关闭或未审核");
         }
         User loginUser = userService.getLoginUser(request);
         String accessKey = loginUser.getAccessKey();
